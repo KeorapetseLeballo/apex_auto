@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { CSSProperties, useEffect, useState } from 'react';
 import { Menu, X, Shield, Phone, Mail, MapPin, ChevronLeft, ChevronRight, ChevronUp } from 'lucide-react';
 
 type Service = {
@@ -7,23 +7,13 @@ type Service = {
 };
 
 function App() {
+
+
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
-  const [serviceSlide, setServiceSlide] = useState(0);
-  const [showScrollTop, setShowScrollTop] = useState(false);
+  const [currentServiceSlide, setCurrentServiceSlide] = useState(0);
 
-  useEffect(() => {
-    const handleScroll = () => {
-      setShowScrollTop(window.scrollY > 200);
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    handleScroll();
-
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  const services: Service[] = [
+  const services = [
     {
       title: 'Roadworthy Maintenance',
       items: [
@@ -85,10 +75,8 @@ function App() {
     }
   ];
 
-  const serviceSlides: Service[][] = [];
-  for (let i = 0; i < services.length; i += 3) {
-    serviceSlides.push(services.slice(i, i + 3));
-  }
+  const totalServiceSlides = services.length;
+  const hasServiceSlides = totalServiceSlides > 0;
 
   const carouselImages = [
     {
@@ -105,7 +93,7 @@ function App() {
     }
   ];
 
-  const nextSlide = () => {
+    const nextSlide = () => {
     setCurrentSlide((prev) => (prev + 1) % carouselImages.length);
   };
 
@@ -114,18 +102,63 @@ function App() {
   };
 
   const nextServiceSlide = () => {
-    if (!serviceSlides.length) return;
-    setServiceSlide((prev) => (prev + 1) % serviceSlides.length);
+    if (!hasServiceSlides) return;
+    setCurrentServiceSlide((prev) => (prev + 1) % totalServiceSlides);
   };
 
   const prevServiceSlide = () => {
-    if (!serviceSlides.length) return;
-    setServiceSlide((prev) => (prev - 1 + serviceSlides.length) % serviceSlides.length);
+    if (!hasServiceSlides) return;
+    setCurrentServiceSlide((prev) => (prev - 1 + totalServiceSlides) % totalServiceSlides);
   };
 
-  const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+  useEffect(() => {
+    if (totalServiceSlides <= 1) {
+      return;
+    }
+
+    const intervalId = window.setInterval(() => {
+      setCurrentServiceSlide((prev) => (prev + 1) % totalServiceSlides);
+    }, 2000);
+
+    return () => window.clearInterval(intervalId);
+  }, [totalServiceSlides]);
+
+  const hasMultipleServiceSlides = totalServiceSlides > 1;
+
+  const heroBackgroundStyle: CSSProperties = {
+    backgroundImage: "url('/trucks darker.jpg')",
+    backgroundSize: 'cover',
+    backgroundPosition: 'center',
+    backgroundRepeat: 'no-repeat'
   };
+
+  const whoWeAreBackgroundStyle: CSSProperties = {
+    backgroundImage: "url('/tipper truck.jpg')",
+    backgroundSize: 'cover',
+    backgroundPosition: 'center',
+    backgroundRepeat: 'no-repeat'
+  };
+
+  const testingBackgroundStyle: CSSProperties = {
+    backgroundImage: "url('/service station.jpg')",
+    backgroundSize: 'cover',
+    backgroundPosition: 'center',
+    backgroundRepeat: 'no-repeat'
+  };
+
+  const heroSlideCount = carouselImages.length;
+
+  useEffect(() => {
+    if (heroSlideCount <= 1) {
+      return;
+    }
+
+    const intervalId = window.setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % heroSlideCount);
+    }, 4000);
+
+    return () => window.clearInterval(intervalId);
+  }, [heroSlideCount]);
 
   return (
     <div className="min-h-screen bg-black text-white">
@@ -173,9 +206,14 @@ function App() {
         )}
       </nav>
 
-      <section id="home" className="relative h-screen flex items-center justify-center overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-black via-gray-900 to-black">
-          <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-gray-700 to-transparent transform skew-x-12 origin-top-right"></div>
+      <section
+        id="home"
+        className="relative h-screen flex items-center justify-center overflow-hidden bg-cover bg-center"
+        style={heroBackgroundStyle}
+      >
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute inset-0 bg-gradient-to-br from-black via-gray-900/95 to-black opacity-95"></div>
+          <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-gray-700/70 to-transparent transform skew-x-12 origin-top-right"></div>
         </div>
 
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
@@ -240,9 +278,14 @@ function App() {
         </div>
       </section>
 
-      <section id="about" className="py-20 bg-gradient-to-b from-black to-gray-900 relative">
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-0 left-0 w-1/3 h-full bg-gradient-to-r from-lime-400 to-transparent transform -skew-x-12"></div>
+      <section
+        id="about"
+        className="py-20 relative overflow-hidden bg-cover bg-center"
+        style={whoWeAreBackgroundStyle}
+      >
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute inset-0 bg-gradient-to-b from-black/95 via-black/85 to-gray-900/90"></div>
+          <div className="absolute top-0 left-0 w-1/3 h-full bg-gradient-to-r from-lime-400/40 to-transparent transform -skew-x-12"></div>
         </div>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="flex items-center space-x-3 mb-12">
@@ -273,9 +316,13 @@ function App() {
         </div>
       </section>
 
-      <section className="py-20 bg-black relative overflow-hidden">
-        <div className="absolute inset-0">
-          <div className="absolute bottom-0 right-0 w-2/3 h-full bg-gradient-to-t from-gray-700 to-transparent transform skew-y-6 origin-bottom-right opacity-20"></div>
+      <section
+        className="py-20 bg-black relative overflow-hidden bg-cover bg-center"
+        style={{ backgroundImage: "url('/van.jpg')" }}
+      >
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute inset-0 bg-gradient-to-b from-black/95 via-black/85 to-gray-900/90"></div>
+          <div className="absolute bottom-0 right-0 w-2/3 h-full bg-gradient-to-t from-gray-700/70 to-transparent transform skew-y-6 origin-bottom-right opacity-80"></div>
         </div>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="flex items-center space-x-3 mb-8">
@@ -284,7 +331,7 @@ function App() {
           </div>
           <div className="bg-gray-900/50 backdrop-blur-sm border border-lime-400/30 rounded-lg p-8">
             <p className="text-gray-300 text-lg leading-relaxed">
-              BECAUSE WE KNOW HOW IMPORTANT IT IS FOR OUR CLIENTS TO MEET DEADLINES AND ADHERE TO SCHEDULES, WE MAKE IT OUR BUSINESS TO ENSURE THAT YOUR VEHICLE IS REPAIRED AND SERVICED WITHIN AN OPTIMAL TIMEFRAME. OUR SPACIOUS NEW WORKSHOP IS DESIGNED TO ACCOMMODATE YELLOW FLEET. THIS ENSURES THAT NO MATTER HOW BIG OR SMALL YOUR NEED, WE'LL GET YOU BACK ON THE ROAD QUICKLY – WITHOUT COMPROMISING ON QUALITY!
+              Because we know how important it is for our clients to meet deadlines and adhere to schedules, we make it our business to ensure that your vehicle is repaired and serviced within an optimal timeframe. Our spacious new workshop is designed to accommodate yellow fleet, ensuring that no matter how big or small your need, we will get you back on the road quickly without compromising on quality.
             </p>
           </div>
         </div>
@@ -298,68 +345,72 @@ function App() {
           </div>
 
           <div className="relative">
-            <div className="overflow-hidden">
+            <div className="bg-gray-900/50 backdrop-blur-sm border border-gray-800 rounded-lg p-4 sm:p-8 hover:border-lime-400 transition overflow-hidden">
               <div
-                className="flex transition-transform duration-500 ease-in-out"
-                style={{ transform: `translateX(-${serviceSlide * 100}%)` }}
+                className="flex transition-transform duration-[900ms] ease-[cubic-bezier(0.65,0,0.35,1)]"
+                style={{ transform: `translateX(-${currentServiceSlide * 100}%)` }}
               >
-                {serviceSlides.map((slideGroup, slideIndex) => (
-                  <div key={slideIndex} className="min-w-full grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    {slideGroup.map((service, index) => (
-                      <div
-                        key={`${service.title}-${index}`}
-                        className="bg-gray-900/50 backdrop-blur-sm border border-gray-800 rounded-lg p-6 hover:border-lime-400 transition"
-                      >
-                        <div className="flex items-center space-x-2 mb-4">
-                          <div className="w-8 h-4 bg-lime-400 transform skew-x-12"></div>
-                          <h3 className="text-xl font-bold text-white">{service.title}</h3>
-                        </div>
-                        <ul className="space-y-2">
-                          {service.items.map((item, idx) => (
-                            <li key={idx} className="text-gray-400 flex items-start">
-                              <span className="text-lime-400 mr-2">•</span>
-                              <span>{item}</span>
-                            </li>
-                          ))}
-                        </ul>
+                {services.map((service) => (
+                  <div key={service.title} className="min-w-full px-1 sm:px-4">
+                    <div className="bg-black/30 border border-gray-800 rounded-lg p-6 sm:p-8 h-full hover:border-lime-400 transition-all duration-500 shadow-lg">
+                      <div className="flex items-center space-x-2 mb-4">
+                        <div className="w-6 h-3 bg-lime-400 transform skew-x-12"></div>
+                        <h3 className="text-2xl font-bold text-white">{service.title}</h3>
                       </div>
-                    ))}
+                      <ul className="space-y-3">
+                        {service.items.map((item, idx) => (
+                          <li key={idx} className="text-gray-300 flex items-start text-lg">
+                            <span className="text-lime-400 mr-3">•</span>
+                            <span>{item}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
                   </div>
                 ))}
               </div>
             </div>
 
-            <button
-              onClick={prevServiceSlide}
-              className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-12 bg-lime-400 text-black p-3 rounded-full hover:bg-lime-500 transition"
-            >
-              <ChevronLeft size={24} />
-            </button>
-            <button
-              onClick={nextServiceSlide}
-              className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-12 bg-lime-400 text-black p-3 rounded-full hover:bg-lime-500 transition"
-            >
-              <ChevronRight size={24} />
-            </button>
-
-            <div className="flex justify-center mt-8 space-x-2">
-              {serviceSlides.map((_, index) => (
+            {hasMultipleServiceSlides && (
+              <>
                 <button
-                  key={index}
-                  onClick={() => setServiceSlide(index)}
-                  className={`w-3 h-3 rounded-full transition ${
-                    index === serviceSlide ? 'bg-lime-400' : 'bg-gray-600'
-                  }`}
-                />
-              ))}
-            </div>
+                  onClick={prevServiceSlide}
+                  className="absolute left-4 top-1/2 -translate-y-1/2 bg-lime-400 text-black p-3 rounded-full hover:bg-lime-500 transition shadow-lg"
+                >
+                  <ChevronLeft size={24} />
+                </button>
+                <button
+                  onClick={nextServiceSlide}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 bg-lime-400 text-black p-3 rounded-full hover:bg-lime-500 transition shadow-lg"
+                >
+                  <ChevronRight size={24} />
+                </button>
+
+                <div className="flex justify-center mt-8 space-x-2">
+                  {services.map((_, index) => (
+                    <button
+                      key={index}
+                      onClick={() => setCurrentServiceSlide(index)}
+                      className={`w-3 h-3 rounded-full transition ${
+                        index === currentServiceSlide ? 'bg-lime-400' : 'bg-gray-600'
+                      }`}
+                    />
+                  ))}
+                </div>
+              </>
+            )}
           </div>
         </div>
       </section>
 
-      <section id="testing" className="py-20 bg-gradient-to-b from-black to-gray-900 relative">
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-1/2 right-0 w-1/2 h-full bg-gradient-to-l from-lime-400 to-transparent transform skew-y-12"></div>
+      <section
+        id="testing"
+        className="py-20 relative bg-cover bg-center overflow-hidden"
+        style={testingBackgroundStyle}
+      >
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute inset-0 bg-gradient-to-b from-black/95 via-black/85 to-gray-900/90"></div>
+          <div className="absolute top-1/2 right-0 w-1/2 h-full bg-gradient-to-l from-lime-400/40 to-transparent transform skew-y-12"></div>
         </div>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="flex items-center space-x-3 mb-12">
@@ -374,7 +425,7 @@ function App() {
                 We offer facilities where motor vehicles are assessed for their roadworthiness. These stations ensure vehicles are safe and fit for use on South African public roads and issuing of a certificate of roadworthiness.
               </p>
               <p className="text-gray-300 leading-relaxed">
-                AT Ts Mobile Mechanical we offer Grade A and Grade B testing stations. Grade A can test any type of motor vehicle, while Grade B stations are limited to vehicles excluding buses, minibuses, and those exceeding 3,500kg.
+                At Apex Auto Repairs and maintenance we offer Grade A and Grade B testing stations. Grade A can test any type of motor vehicle, while Grade B stations are limited to vehicles excluding buses, minibuses, and those exceeding 3,500kg.
               </p>
             </div>
 
@@ -454,16 +505,7 @@ function App() {
           </div>
         </div>
       </footer>
-
-      {showScrollTop && (
-        <button
-          onClick={scrollToTop}
-          aria-label="Back to top"
-          className="fixed bottom-6 right-6 md:bottom-8 md:right-8 bg-lime-400 text-black p-3 md:p-4 rounded-full shadow-2xl hover:bg-lime-500 transition z-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-black focus-visible:ring-lime-300"
-        >
-          <ChevronUp size={24} />
-        </button>
-      )}
+    
     </div>
   );
 }
